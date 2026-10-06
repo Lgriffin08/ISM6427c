@@ -343,10 +343,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .auth-message.error { border: 1px solid var(--accent-2); color: var(--accent-2); }
 
 .user-menu { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.user-email {
-  font-size: 0.85rem;
-  color: var(--muted);
-  max-width: 220px;
+.user-name {
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -354,5 +352,28 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn-small { min-height: 36px; padding: 0 12px; font-size: 0.9rem; border-radius: 999px; }
 
 @media (max-width: 520px) {
-  .user-email { max-width: 140px; }
+  .user-name { max-width: 90px; }
 }
+
+/* ---------- Profile ---------- */
+.profile-card { max-width: 520px; text-align: left; }
+.profile-card .auth-icon, .profile-card h1, .profile-card > p.muted { text-align: center; }
+.profile-card .search { flex: none; }
+.auth-form input[readonly] { opacity: 0.75; cursor: default; }
+.field-hint { margin: -4px 0 4px; font-size: 0.85rem; }
+.choice-group {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px 12px;
+  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.choice-group legend { font-size: 0.9rem; font-weight: 600; padding: 0 4px; }
+.choice-group label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; cursor: pointer; min-height: 32px; }
+.choice-group input { accent-color: var(--accent); width: 18px; height: 18px; }
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.form-actions .btn { min-height: 46px; }
+.form-actions .btn-primary { flex: 1 1 auto; }
+.profile-btn { gap: 4px; }

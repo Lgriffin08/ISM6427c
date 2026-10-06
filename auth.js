@@ -12,22 +12,42 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
 
 const authEl = (id) => document.getElementById(id);
 let appStarted = false;
+let signedInUserId = null;
 
-function showSignedIn(user) {
-  authEl("auth-screen").hidden = true;
-  authEl("app").hidden = false;
+// After sign-in: load the profile, ask new users to create one, then show the app.
+async function showSignedIn(user) {
+  if (signedInUserId === user.id) return; // ignore token refreshes
+  signedInUserId = user.id;
   authEl("user-menu").hidden = false;
-  authEl("user-email").textContent = user.email;
+  authEl("profile-btn").hidden = true; // shown once the profile exists
+  Profiles.showScreen("loading-screen");
+  try {
+    const profile = await Profiles.load(sb, user);
+    if (Profiles.isComplete(profile)) enterApp(profile);
+    else Profiles.open("setup", enterApp);
+  } catch (err) {
+    console.error(err);
+    signedInUserId = null;
+    authEl("loading-screen").querySelector("p").textContent =
+      "Couldn't load your profile. Refresh the page to try again.";
+  }
+}
+
+function enterApp(profile) {
+  Profiles.showScreen("app");
+  authEl("profile-btn").hidden = false;
+  authEl("user-name").textContent = profile.display_name;
   if (!appStarted) {
     appStarted = true;
-    window.OwlWeather.start();
+    window.OwlWeather.start(profile);
   }
 }
 
 function showSignedOut() {
-  authEl("app").hidden = true;
+  signedInUserId = null;
+  window.OwlWeather.onPreferenceChange = null;
   authEl("user-menu").hidden = true;
-  authEl("auth-screen").hidden = false;
+  Profiles.showScreen("auth-screen");
   if (appStarted) {
     // Reload so no weather state or timers carry over to the next user.
     window.location.replace(window.location.pathname);
@@ -86,19 +106,23 @@ function initAuth() {
   readLinkError();
   authEl("auth-form").addEventListener("submit", sendMagicLink);
   authEl("signout-btn").addEventListener("click", signOut);
+  authEl("profile-btn").addEventListener("click", () => Profiles.open("edit", enterApp));
 
   // Fires once on load with the stored session (or the one from a magic link),
   // then again on every sign-in or sign-out, including in other tabs.
+  // Supabase calls made inside this callback can deadlock, so defer the work.
   sb.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      // Drop the leftover "#" from the magic-link redirect.
-      if (window.location.href.includes("#")) {
-        history.replaceState(null, "", window.location.pathname);
+    setTimeout(() => {
+      if (session?.user) {
+        // Drop the leftover "#" from the magic-link redirect.
+        if (window.location.href.includes("#")) {
+          history.replaceState(null, "", window.location.pathname);
+        }
+        showSignedIn(session.user);
+      } else {
+        showSignedOut();
       }
-      showSignedIn(session.user);
-    } else {
-      showSignedOut();
-    }
+    }, 0);
   });
 }
 

@@ -1,7 +1,6 @@
 "use strict";
 
 // ---------- Config ----------
-const USER_NAME = "Latrell";
 const DEFAULT_LOCATION = {
   name: "Boca Raton",
   sub: "Florida Atlantic University · Florida, US",
@@ -47,6 +46,9 @@ const WEATHER_CODES = {
 // ---------- State ----------
 const state = {
   location: DEFAULT_LOCATION,
+  home: DEFAULT_LOCATION,
+  userName: "",
+  started: false,
   unit: readStorage("unit") === "celsius" ? "celsius" : "fahrenheit",
   lastData: null,
   refreshTimer: null,
@@ -75,7 +77,8 @@ function renderGreeting() {
   let emoji = "🌙";
   if (hour >= 5 && hour < 12) { part = "morning"; emoji = "☀️"; }
   else if (hour >= 12 && hour < 17) { part = "afternoon"; emoji = "🌤️"; }
-  $("greeting").textContent = `Good ${part}, ${USER_NAME}! ${emoji}`;
+  const name = state.userName ? `, ${state.userName}` : "";
+  $("greeting").textContent = `Good ${part}${name}! ${emoji}`;
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long", month: "long", day: "numeric",
   });
@@ -438,14 +441,44 @@ function useMyLocation() {
   );
 }
 
-// ---------- Init ----------
-function init() {
-  renderGreeting();
-  setInterval(renderGreeting, 60 * 1000);
+// ---------- Profile ----------
+// Maps a row from the Supabase "profiles" table onto the app.
+function profileHome(profile) {
+  return {
+    name: profile.home_name,
+    sub: profile.home_label,
+    latitude: profile.home_latitude,
+    longitude: profile.home_longitude,
+  };
+}
 
+function applyProfile(profile) {
+  const oldHome = state.home;
+  const unitChanged = profile.temperature_unit !== state.unit;
+  state.userName = profile.display_name || "";
+  state.home = profileHome(profile);
+  applyTheme(profile.theme);
+  applyUnit(profile.temperature_unit);
+  $("home-btn").title = `Back to ${state.home.name}`;
+  $("home-label").textContent = state.home.name.split(/[ ,]/)[0];
+  renderGreeting();
+
+  if (!state.started) return;
+  const homeMoved = oldHome.latitude !== state.home.latitude || oldHome.longitude !== state.home.longitude;
+  const viewingOldHome = state.location === oldHome;
+  if (homeMoved && viewingOldHome) setLocation(state.home);
+  else if (unitChanged) loadWeather();
+}
+
+// Header toggles work everywhere (even on the sign-in screen). When signed in,
+// profile.js sets onPreferenceChange so the choice is also saved to the profile.
+function initPreferenceToggles() {
   applyTheme(readStorage("theme") || "system");
   document.querySelectorAll("[data-theme-choice]").forEach((btn) =>
-    btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice))
+    btn.addEventListener("click", () => {
+      applyTheme(btn.dataset.themeChoice);
+      window.OwlWeather.onPreferenceChange?.("theme", btn.dataset.themeChoice);
+    })
   );
 
   applyUnit(state.unit);
@@ -453,13 +486,24 @@ function init() {
     btn.addEventListener("click", () => {
       if (btn.dataset.unit === state.unit) return;
       applyUnit(btn.dataset.unit);
-      loadWeather();
+      window.OwlWeather.onPreferenceChange?.("temperature_unit", btn.dataset.unit);
+      if (state.started) loadWeather();
     })
   );
+}
+
+// ---------- Init ----------
+function init(profile) {
+  if (profile) applyProfile(profile);
+  state.location = state.home;
+  state.started = true;
+
+  renderGreeting();
+  setInterval(renderGreeting, 60 * 1000);
 
   initSearch();
   $("locate-btn").addEventListener("click", useMyLocation);
-  $("home-btn").addEventListener("click", () => setLocation(DEFAULT_LOCATION));
+  $("home-btn").addEventListener("click", () => setLocation(state.home));
 
   // Refresh when the tab comes back into view so data stays current.
   document.addEventListener("visibilitychange", () => {
@@ -469,5 +513,13 @@ function init() {
   loadWeather();
 }
 
-// auth.js calls start() once the user is signed in.
-window.OwlWeather = { start: init };
+initPreferenceToggles();
+
+// auth.js calls start() once the user is signed in and has a profile.
+window.OwlWeather = {
+  start: init,
+  applyProfile,
+  searchCities,
+  onPreferenceChange: null,
+  DEFAULT_LOCATION,
+};

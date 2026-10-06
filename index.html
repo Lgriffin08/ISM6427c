@@ -29,7 +29,7 @@
         <button type="button" role="radio" data-theme-choice="system" aria-checked="true" title="Match system">💻<span class="label">System</span></button>
       </div>
       <div id="user-menu" class="user-menu" hidden>
-        <span id="user-email" class="user-email"></span>
+        <button type="button" id="profile-btn" class="btn btn-small profile-btn" title="Edit your profile">👤 <span id="user-name" class="user-name">Profile</span></button>
         <button type="button" id="signout-btn" class="btn btn-small">Sign out</button>
       </div>
     </div>
@@ -38,7 +38,7 @@
   <main id="auth-screen" class="container auth-screen">
     <section class="card auth-card" aria-labelledby="auth-title">
       <div class="auth-icon" aria-hidden="true">🦉</div>
-      <h1 id="auth-title">Hey Latrell 👋</h1>
+      <h1 id="auth-title">Welcome to Owl Weather 👋</h1>
       <p class="muted">Sign in with your email to see the weather. We'll send you a link, no password needed.</p>
       <form id="auth-form" class="auth-form">
         <label for="auth-email">Email address</label>
@@ -49,9 +49,54 @@
     </section>
   </main>
 
+  <main id="loading-screen" class="container auth-screen" hidden>
+    <p class="muted" role="status">Loading your profile…</p>
+  </main>
+
+  <main id="profile-screen" class="container auth-screen" hidden>
+    <section class="card auth-card profile-card" aria-labelledby="profile-title">
+      <div class="auth-icon" aria-hidden="true">👤</div>
+      <h1 id="profile-title">Create your profile</h1>
+      <p id="profile-intro" class="muted">Tell us a little about you so Owl Weather can greet you and open on your city.</p>
+      <form id="profile-form" class="auth-form" novalidate>
+        <label for="profile-email">Email</label>
+        <input id="profile-email" type="email" readonly />
+
+        <label for="profile-name">Your name</label>
+        <input id="profile-name" type="text" maxlength="50" autocomplete="given-name" placeholder="e.g. Latrell" required />
+
+        <label for="profile-city">Home city</label>
+        <div class="search">
+          <input id="profile-city" type="search" autocomplete="off" placeholder="Search a city…" aria-controls="profile-city-results" aria-expanded="false" />
+          <ul id="profile-city-results" class="search-results" role="listbox" hidden></ul>
+        </div>
+        <p id="profile-city-current" class="field-hint muted"></p>
+
+        <fieldset class="choice-group">
+          <legend>Temperature units</legend>
+          <label><input type="radio" name="profile-unit" value="fahrenheit" /> °F Fahrenheit</label>
+          <label><input type="radio" name="profile-unit" value="celsius" /> °C Celsius</label>
+        </fieldset>
+
+        <fieldset class="choice-group">
+          <legend>Theme</legend>
+          <label><input type="radio" name="profile-theme" value="light" /> ☀️ Light</label>
+          <label><input type="radio" name="profile-theme" value="dark" /> 🌙 Dark</label>
+          <label><input type="radio" name="profile-theme" value="system" /> 💻 System</label>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="button" id="profile-cancel" class="btn" hidden>Cancel</button>
+          <button type="submit" id="profile-save" class="btn btn-primary">Save profile</button>
+        </div>
+      </form>
+      <p id="profile-message" class="auth-message" role="status" hidden></p>
+    </section>
+  </main>
+
   <main id="app" class="container" hidden>
     <section class="greeting" aria-live="polite">
-      <h1 id="greeting">Hello, Latrell 👋</h1>
+      <h1 id="greeting">Hello 👋</h1>
       <p id="greeting-sub" class="muted"></p>
     </section>
 
@@ -62,7 +107,7 @@
         <ul id="search-results" class="search-results" role="listbox" hidden></ul>
       </form>
       <button type="button" id="locate-btn" class="btn" title="Use my current location">📍<span class="label">My location</span></button>
-      <button type="button" id="home-btn" class="btn" title="Back to Boca Raton">🏠<span class="label">Boca</span></button>
+      <button type="button" id="home-btn" class="btn" title="Back to Boca Raton">🏠<span id="home-label" class="label">Boca</span></button>
     </section>
 
     <div id="status" class="status" role="status" hidden></div>
@@ -110,6 +155,7 @@
 
   <script src="vendor/supabase.js"></script>
   <script src="app.js"></script>
+  <script src="profile.js"></script>
   <script src="auth.js"></script>
 </body>
 </html>
