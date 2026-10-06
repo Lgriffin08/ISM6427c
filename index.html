@@ -28,10 +28,28 @@
         <button type="button" role="radio" data-theme-choice="dark" aria-checked="false" title="Dark theme">🌙<span class="label">Dark</span></button>
         <button type="button" role="radio" data-theme-choice="system" aria-checked="true" title="Match system">💻<span class="label">System</span></button>
       </div>
+      <div id="user-menu" class="user-menu" hidden>
+        <span id="user-email" class="user-email"></span>
+        <button type="button" id="signout-btn" class="btn btn-small">Sign out</button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
+  <main id="auth-screen" class="container auth-screen">
+    <section class="card auth-card" aria-labelledby="auth-title">
+      <div class="auth-icon" aria-hidden="true">🦉</div>
+      <h1 id="auth-title">Hey Latrell 👋</h1>
+      <p class="muted">Sign in with your email to see the weather. We'll send you a link, no password needed.</p>
+      <form id="auth-form" class="auth-form">
+        <label for="auth-email">Email address</label>
+        <input id="auth-email" type="email" autocomplete="email" inputmode="email" placeholder="you@fau.edu" required />
+        <button type="submit" id="auth-submit" class="btn btn-primary">Email me a sign-in link</button>
+      </form>
+      <p id="auth-message" class="auth-message" role="status" hidden></p>
+    </section>
+  </main>
+
+  <main id="app" class="container" hidden>
     <section class="greeting" aria-live="polite">
       <h1 id="greeting">Hello, Latrell 👋</h1>
       <p id="greeting-sub" class="muted"></p>
@@ -90,6 +108,8 @@
     Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) · Go Owls! 🦉
   </footer>
 
+  <script src="vendor/supabase.js"></script>
   <script src="app.js"></script>
+  <script src="auth.js"></script>
 </body>
 </html>

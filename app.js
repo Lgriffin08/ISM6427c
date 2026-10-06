@@ -469,4 +469,5 @@ function init() {
   loadWeather();
 }
 
-init();
+// auth.js calls start() once the user is signed in.
+window.OwlWeather = { start: init };

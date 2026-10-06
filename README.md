@@ -11,6 +11,7 @@ A responsive weather app with live data from the free [Open-Meteo API](https://o
 - Responsive layout for phones, tablets, and desktops
 - Refreshes automatically every 10 minutes and when you return to the tab
 - A time-of-day greeting for Latrell
+- **Email login** (passwordless magic link) through Supabase Auth
 
 ## Files
 | File | Purpose |
@@ -18,8 +19,18 @@ A responsive weather app with live data from the free [Open-Meteo API](https://o
 | `index.html` | Page markup |
 | `styles.css` | Themes and responsive layout |
 | `app.js` | Open-Meteo calls, rendering, search, theme and unit handling |
+| `auth.js` | Supabase email login: sends the magic link, shows the app when signed in, sign out |
+| `vendor/supabase.js` | Supabase JS client v2.117.2 (served from this site, no CDN) |
 | `theme-init.js` | Applies the saved theme before the page paints |
 | `netlify.toml` | Netlify config (no build step) and security headers |
+
+## Email login (Supabase)
+The app is locked behind a sign-in screen. You type your email, Supabase emails you a link, and clicking it signs you in. There's no password, and the session stays until you click **Sign out**.
+
+- Supabase project: `ISM6427c` (`https://ygrlzdgzxpxvzrtkmdus.supabase.co`)
+- The publishable key in `auth.js` is safe to be public. Never put the `service_role`/secret key in this repo.
+- **One-time setup in Supabase:** Authentication → URL Configuration → set **Site URL** to `https://ism6427-c.netlify.app` and add `http://localhost:8080/**` under **Redirect URLs** for local testing. Without this, the email link sends you to `localhost:3000`.
+- Supabase's built-in email sender only delivers to members of your Supabase organization, and only a few emails per hour. To let anyone sign in, add your own SMTP provider under Authentication → Emails → SMTP Settings.
 
 ## Run locally
 There's no build step. Serve the folder with any static server:
